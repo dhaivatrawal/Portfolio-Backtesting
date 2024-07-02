@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from portfolioCreation import PortfolioManager
+from rebalancing import PortfolioRebalancer
 
 # Example usage
 portfolio_manager = PortfolioManager('/Users/dhaivatrawal/Desktop/portfolio_backtesting/portfolio.xlsx')
@@ -15,3 +16,11 @@ stock_returns = portfolio_manager.create_portfolio(
     end_date=pd.Timestamp('2018-12-31')
 )
 print(stock_returns)
+
+# rebalancer = PortfolioRebalancer(portfolio_manager)
+# rebalancer.rebalance_portfolio(
+#         date=pd.Timestamp('2018-06-01'),
+#         stocks_to_sell=['Asian Paints Ltd.'],
+#         new_stocks=['LIC Housing Finance Ltd', 'Supreme Industries Limited'],
+#         new_weights=[0.2, 0.2]
+# )

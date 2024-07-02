@@ -30,7 +30,7 @@ class PortfolioManager:
     
     def plot_stock(self, stock_name):
         try:
-            if stock_name in self.data.index:
+            if (stock_name in self.data.index):
                 self.data.loc[stock_name].plot(title=stock_name)
                 plt.xlabel('Date')
                 plt.ylabel('Price')
@@ -41,7 +41,7 @@ class PortfolioManager:
             print(f"Error plotting stock: {e}")
     
     def create_portfolio(self, stock_names, weights, initial_budget, start_date, end_date):
-        #Budget * weights
+        # Budget * weights
         bud_we = []
         try:
             # Validate inputs
@@ -51,62 +51,55 @@ class PortfolioManager:
                 raise ValueError("Sum of weights cannot exceed 1.")
             if start_date not in self.data.columns or end_date not in self.data.columns:
                 raise ValueError("Selected dates are not available in the data.")
-                        
+
             # Create portfolio
             selected_data = self.data.loc[stock_names, start_date:end_date]
             print(f"Price of Selected Stock\n{selected_data}\n")
 
-             # Initialize an empty DataFrame for returns
+            # Initialize an empty DataFrame for returns
             returns_df = pd.DataFrame(index=selected_data.index, columns=selected_data.columns[1:])
-            
+
             # Calculate returns
             for stock in selected_data.index:
                 prices = selected_data.loc[stock]
-                returns = (((prices[1:].values - prices[:-1].values) / prices[:-1].values)*100)
+                returns = (((prices[1:].values - prices[:-1].values) / prices[:-1].values) * 100)
                 returns_df.loc[stock] = returns
-            
+
             # Print the DataFrame with returns
             print("DataFrame with Returns:\n", returns_df)
 
             for i in weights:
-                new_multi = initial_budget*i
+                new_multi = initial_budget * i
                 bud_we.append(new_multi)
             print(bud_we)
-            new_selected_data = 1/selected_data
-            print(f"New Selected Data = 1/Selected Data \n{new_selected_data}\n")
-            weighted_data = new_selected_data.multiply((bud_we), axis=0)
-            print(f"Quantity of Stock according to budget and weights\n {weighted_data}\n")
 
-            weighted_data = weighted_data.iloc[:, :-1]  # Drop the last column from weighted_data
-            weighted_data.columns = returns_df.columns
-            print("Dropped Colum Weighted Data\n")
-            print(weighted_data)
+            individual_stock_returns = pd.DataFrame(index=selected_data.index, columns=selected_data.columns[:])
+            print(f"individual_stock_returns\n\n\n{individual_stock_returns}")
 
-            daily_individual_value = np.multiply(selected_data, weighted_data.iloc[:, 0].values[:, None])
-            print("\n\n\nDaily Individual Value")
-            print(daily_individual_value)
+            # Add bud_we values at the start_date in individual_stock_returns DataFrame
+            individual_stock_returns[start_date] = bud_we
+            print(f"Updated individual_stock_returns with bud_we values at {start_date}:\n{individual_stock_returns}\n")
 
-            final_individual_returns = ((daily_individual_value.iloc[:, -1] - daily_individual_value.iloc[:, 0]) / daily_individual_value.iloc[:, 0])*100
+            # Iterate over each date starting from the day after start_date
+            for date in selected_data.columns[1:]:
+                prev_date = selected_data.columns[selected_data.columns.get_loc(date) - 1]
+                individual_stock_returns[date] = individual_stock_returns[prev_date] * (1 + (returns_df[date] / 100))
+            print(f"Updated individual_stock_returns for {date}:\n{individual_stock_returns}\n")
+
+            final_individual_returns = ((individual_stock_returns.iloc[:, -1] - individual_stock_returns.iloc[:, 0]) / individual_stock_returns.iloc[:, 0]) * 100
             print("\nFinal Individual Returns")
             print(final_individual_returns)
 
+            daily_portfolio_val = individual_stock_returns.sum()
+            print(f"\n\n\n\n\nDaily Portfolio Val {daily_portfolio_val}")
 
             final_portfolio_return = (final_individual_returns.mul(weights)).sum()
-            print(f"\n\n\nFinal Portfolio Returns \n")
+            print(f"\n\n\nFinal Portfolio Returns \n{final_portfolio_return}")
 
 
-            # Plot portfolio
-            #portfolio_value.plot(title='Portfolio Value Over Time')
-            #plt.xlabel('Date')
-            #plt.ylabel('Portfolio Value')
-            #plt.show()
-            
-            #print(f"Portfolio return over the period: {portfolio_return:.2%}")
-            
-            
             return final_portfolio_return
         except Exception as e:
             print(f"Error creating portfolio: {e}")
-    
+
     def fetch_data(self):
         return self.data
