@@ -37,10 +37,6 @@ if __name__ == "__main__":
     print("Empty DataFrame with same structure as rebalanced_portfolio_value but with date range from start_date to end_date:")
     print(complete_rebalanced_portfolio_value)
 
-    # # Create an empty DataFrame with the same structure as the individual_stock_value
-    # empty_df = pd.DataFrame(index=portfolio_value.index, columns=portfolio_value.columns[:])
-    # print(f"Empty DataFrame with same structure as portfolio_value:\n{empty_df}")
-
     # Task: Select common stocks and modify portfolio_value DataFrame
     common_stocks = list(set(stock_names).intersection(stocks_to_sell))
     print(f"Common stocks to modify: {common_stocks}")
@@ -65,5 +61,14 @@ if __name__ == "__main__":
         # Store the modified DataFrame into a new variable
         new_df = modified_portfolio_value
 
-        # # Optionally, you can save this new DataFrame to a file or perform further analysis
-        # new_df.to_excel("/path/to/save/modified_portfolio_value.xlsx")
+        # Merge rebalanced_portfolio_value and complete_rebalanced_portfolio_value and fill NaNs with 0
+        merged_df = pd.merge(complete_rebalanced_portfolio_value, rebalanced_portfolio_value, left_index=True, right_index=True, how='outer', suffixes=('_complete','_rebalanced'))
+        merged_df.fillna(0, inplace=True)
+
+        # Display the merged dataframe
+        print("Merged DataFrame with filled NaNs as 0 and date format aligned with portfolio_value:")
+        print(merged_df)
+
+        # Optionally, you can plot or further analyze the merged dataframe
+        # new_final_merge_df.plot()
+        # plt.show()
