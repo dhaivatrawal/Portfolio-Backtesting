@@ -5,7 +5,7 @@ import numpy as np
 
 class PortfolioManager:
     def __init__(self, file_path):
-        self.file_path = 'portfolio.xlsx'
+        self.file_path = file_path
         self.data = None
         self.load_data()
     
@@ -33,7 +33,7 @@ class PortfolioManager:
     
     def plot_stock(self, stock_name):
         try:
-            if (stock_name in self.data.index):
+            if stock_name in self.data.index:
                 self.data.loc[stock_name].plot(title=stock_name)
                 plt.xlabel('Date')
                 plt.ylabel('Price')
@@ -62,6 +62,20 @@ class PortfolioManager:
         except Exception as e:
             print(f"Error computing budget weights: {e}")
             return []
+    
+    def daily_portfolio_val(self, individual_stock_value):
+        try:
+            return individual_stock_value.sum()
+        except Exception as e:
+            print(f"Error calculating daily portfolio values: {e}")
+            return pd.Series()
+    
+    def final_portfolio_return(self, daily_portfolio_val):
+        try:
+            return ((daily_portfolio_val.iloc[-1] - daily_portfolio_val.iloc[0]) / daily_portfolio_val.iloc[0]) * 100
+        except Exception as e:
+            print(f"Error calculating final portfolio return: {e}")
+            return 0
     
     def create_portfolio(self, stock_names, weights, initial_budget, start_date, end_date):
         try:
@@ -96,10 +110,10 @@ class PortfolioManager:
             print("\nFinal Individual Returns")
             print(final_individual_returns)
 
-            daily_portfolio_val = individual_stock_value.sum()
+            daily_portfolio_val = self.daily_portfolio_val(individual_stock_value)
             print(f"\n\n\n\n\nDaily Portfolio Val {daily_portfolio_val}")
 
-            final_portfolio_return = (final_individual_returns.mul(weights)).sum()
+            final_portfolio_return = self.final_portfolio_return(daily_portfolio_val)
             print(f"\n\n\nFinal Portfolio Returns \n{final_portfolio_return}")
 
             return final_portfolio_return, individual_stock_value

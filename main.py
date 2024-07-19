@@ -62,3 +62,9 @@ if __name__ == "__main__":
     print("Combined DataFrame with date format aligned with portfolio_value:")
     print(combined_df)
 
+    portfolio_manager = PortfolioManager(file_path)
+    daily_vals = portfolio_manager.daily_portfolio_val(combined_df)
+    final_return = portfolio_manager.final_portfolio_return(daily_vals)
+    print(f"{daily_vals}\n\n\n\n\n\nFinal Portfolio Return: {final_return}%")
+
+
