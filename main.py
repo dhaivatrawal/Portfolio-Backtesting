@@ -30,13 +30,6 @@ if __name__ == "__main__":
     new_overall_budget = fetcher.new_budget(stocks_to_sell, start_date2)
     rebalanced_portfolio_value = fetcher.newPort(stock_names=new_stocks_to_buy, weights=weights2, initial_budget=new_overall_budget, start_date=start_date2, end_date=end_date)
 
-    # Task: Create an empty DataFrame with the same structure as rebalanced_portfolio_value but with date range from start_date to end_date
-    all_dates = pd.date_range(start=start_date, end=end_date, freq='D')
-    complete_rebalanced_portfolio_value = pd.DataFrame(0, index=rebalanced_portfolio_value.index, columns=all_dates)
-
-    print("Empty DataFrame with same structure as rebalanced_portfolio_value but with date range from start_date to end_date:")
-    print(complete_rebalanced_portfolio_value)
-
     # Task: Select common stocks and modify portfolio_value DataFrame
     common_stocks = list(set(stock_names).intersection(stocks_to_sell))
     print(f"Common stocks to modify: {common_stocks}")
@@ -50,25 +43,22 @@ if __name__ == "__main__":
         # Set the values to 0 for the common stocks between start_date2 and end_date
         for stock in common_stocks:
             if stock in modified_portfolio_value.index:
-                modified_portfolio_value.loc[stock, start_date2:end_date] = 0
+                modified_portfolio_value.loc[stock, start_date2:end_date] = 0.0
             else:
                 print(f"Stock {stock} not found in the portfolio_value DataFrame.")
 
         # Print the modified DataFrame
         print("Modified portfolio_value DataFrame with selected stocks' values set to 0:")
         print(modified_portfolio_value)
-        
-        # Store the modified DataFrame into a new variable
-        new_df = modified_portfolio_value
 
-        # Merge rebalanced_portfolio_value and complete_rebalanced_portfolio_value and fill NaNs with 0
-        merged_df = pd.merge(complete_rebalanced_portfolio_value, rebalanced_portfolio_value, left_index=True, right_index=True, how='outer', suffixes=('_complete','_rebalanced'))
-        merged_df.fillna(0, inplace=True)
 
-        # Display the merged dataframe
-        print("Merged DataFrame with filled NaNs as 0 and date format aligned with portfolio_value:")
-        print(merged_df)
+    # Ensure both DataFrames have the same columns
+    rebalanced_portfolio_value = rebalanced_portfolio_value.reindex(columns=modified_portfolio_value.columns, fill_value=0)
 
-        # Optionally, you can plot or further analyze the merged dataframe
-        # merged_df.plot()
-        # plt.show()
+    # Combine the DataFrames by adding the values
+    combined_df = modified_portfolio_value.add(rebalanced_portfolio_value, fill_value=0)
+
+    # Display the combined DataFrame
+    print("Combined DataFrame with date format aligned with portfolio_value:")
+    print(combined_df)
+
